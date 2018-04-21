@@ -1,14 +1,8 @@
 # **Traffic Sign Recognition** 
 
-## Writeup
-
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
-**Build a Traffic Sign Recognition Project**
-
-The goals / steps of this project are the following:
+## The goals / steps of this project are the following:
 * Load the data set (see below for links to the project data set)
 * Explore, summarize and visualize the data set
 * Design, train and test a model architecture
@@ -19,108 +13,108 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/visualization.jpg "Visualization"
-[image2]: ./examples/grayscale.jpg "Grayscaling"
+[hist_norm]: ./examples/hist_normalized.jpg "Histogram of normalized data"
+[hist_unnorm]: ./examples/hist_unnormalized.jpg "Histogram of un-normalized data"
+[hist_data]: ./examples/hist_data_split.jpg "Class distribution among train, validation and test set."
 [image3]: ./examples/random_noise.jpg "Random Noise"
 [image4]: ./examples/placeholder.png "Traffic Sign 1"
 [image5]: ./examples/placeholder.png "Traffic Sign 2"
 [image6]: ./examples/placeholder.png "Traffic Sign 3"
-[image7]: ./examples/placeholder.png "Traffic Sign 4"
-[image8]: ./examples/placeholder.png "Traffic Sign 5"
-
-## Rubric Points
-### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
 
 ---
-### Writeup / README
 
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf. You can use this template as a guide for writing the report. The submission includes the project code.
+## Data Set Summary & Exploration
 
-You're reading it! and here is a link to my [project code](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
-
-### Data Set Summary & Exploration
-
-#### 1. Provide a basic summary of the data set. In the code, the analysis should be done using python, numpy and/or pandas methods rather than hardcoding results manually.
-
-I used the pandas library to calculate summary statistics of the traffic
+I used the NumPy library to calculate summary statistics of the traffic
 signs data set:
 
-* The size of training set is ?
-* The size of the validation set is ?
-* The size of test set is ?
-* The shape of a traffic sign image is ?
-* The number of unique classes/labels in the data set is ?
+* The size of training set is 34799 images
+* The size of the validation set is 12630 images
+* The size of test set is 4110 images
+* The shape of a traffic sign image is (32, 32, 3)
+* The number of unique classes/labels in the data set is 43
 
-#### 2. Include an exploratory visualization of the dataset.
+Here is an exploratory visualization of the data set. It is a normalized histogram chart, which gives insight into the class distribution for train set, validation set and test set. 
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the data ...
+![][hist_data]
 
-![alt text][image1]
+There is a noticable over-representation of the classes with IDs 20, 21 and 22 in the test set. Class distribution in training and validation sets is more or less comparable.
 
-### Design and Test a Model Architecture
+## Model Architecture Design and Testing
 
-#### 1. Describe how you preprocessed the image data. What techniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, and provide example images of the additional data. Then describe the characteristics of the augmented training set like number of images in the set, number of images for each class, etc.)
+### Data Pre-Processing
 
-As a first step, I decided to convert the images to grayscale because ...
+Right from the onset, I decided to apply as little pre-processing as possible, because it simplifies the whole pipeline and I thought I would rather work getting the right architecture first. So the only pre-processing step that I applied was the data normalization. I tried three different normalization methods, including Tensoflow's own `tf.image.per_image_standardization()`. I ended up choosing my own method, which computes mean and standard deviation of each channel in the image, subtracts the mean and divides by the standard deviation.
 
-Here is an example of a traffic sign image before and after grayscaling.
+Here is comparison of image data histograms before and after normalization.
 
-![alt text][image2]
+![alt text][hist_unnorm]
 
-As a last step, I normalized the image data because ...
+![alt text][hist_norm]
 
-I decided to generate additional data because ... 
-
-To add more data to the the data set, I used the following techniques because ... 
-
-Here is an example of an original image and an augmented image:
-
-![alt text][image3]
-
-The difference between the original data set and the augmented data set is the following ... 
+I wanted to keep everything simple from the start and add complexity later. For these reasons I avoided data augmentation. However, as it became apparent later this technique might be indeed very usefull for improving the performance on the test set.
 
 
-#### 2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
+### Model Architecture
+
+I decided to come up with my own architecture, which would draw certain design conventions from other well-known architectures.
+
+At first, I though I'll have 3 kinds of filter sizes, from 7x7 in the first layer down to the 3x3 in the last layer of the feature extraction phase. This architecture however gave poor performance. As I realized later, this was probably due to the fact that I had only one conv-layer for each filter size.
+
+On my second attempt, I dropped the 7x7 conv-layer and instead used two consecutive 5x5 conv-layers terminated with 2x2 maxpool followed by another two 3x3 conv-layers terminated with 2x2 maxpool. I got increase in performance but not near enough to be acceptable. I thought next I should try and tune the classifier part of the neural net (the one with fully-connected layers). I kept fiddling with different numbers of neurons in each layer, but no matter what I did the performance increase was negligible and I couldn't get the validation accuracy above 90%. This made me think that the classifier is flexible enough, it's the representations that need improving. 
+
+I decided to improve the feature extractor by adding one 5x5 conv-layer and one 3x3 conv-layer. Since the model at this point was starting to get a bit deep, I decided to use the batch normalization to help with learning, which I placed before each RELU activation. BN allowed me to use higher learning rates (which is also mentioned in the original article proposing BN). At this point, I was starting to get validation accuracy around 90% after just one epoch. Finally, I added dropout layer after each activation of the fully-connected layers to add some light regularization.
 
 My final model consisted of the following layers:
 
 | Layer         		|     Description	        					| 
 |:---------------------:|:---------------------------------------------:| 
 | Input         		| 32x32x3 RGB image   							| 
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
+| Convolution 5x5     	| 1x1 stride, same padding, outputs 32x32x4 	|
+| Batch Normalization	|												|
 | RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
-|						|												|
-|						|												|
+| Convolution 5x5     	| 1x1 stride, same padding, outputs 32x32x8 	|
+| Batch Normalization	|												|
+| RELU					|												|
+| Convolution 5x5     	| 1x1 stride, same padding, outputs 32x32x16 	|
+| Batch Normalization	|												|
+| RELU					|												|
+| Max pooling	      	| 2x2 stride, outputs 16x16x16  				|
+| Convolution 3x3	    | 1x1 stride, same padding, outputs	16x16x32    |
+| Batch Normalization	|												|
+| RELU					|												|
+| Convolution 3x3	    | 1x1 stride, same padding, outputs 16x16x64	|
+| Batch Normalization	|												|
+| RELU					|												|
+| Convolution 3x3	    | 1x1 stride, same padding, outputs	16x16x128	|
+| Batch Normalization	|												|
+| RELU					|												|
+| Max pooling			| 2x2 stride, outputs 8x8x128					|
+| Flatten				| output 8192									|
+| Fully connected		| output 1024  									|
+| Batch Normalization	|												|
+| RELU					|												|
+| Dropout           	| keep probability 0.9					    	|
+| Fully connected		| output 512  									|
+| Batch Normalization	|												|
+| RELU					|												|
+| Dropout           	| keep probability 0.9					    	|
+| Fully connected		| output 43    									|
+| Softmax				|           									|
  
 
 
-#### 3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
+### Training, Validation and Testing
 
-To train the model, I used an ....
+To train the model, I used an Adam optimizer with the recommended heuristic values for the parameters $ \beta_1=0.9 $ and $ \beta_2 = 0.999 $. I found that after adding the batch normalization I could increase the learning rate from 0.001 to 0.01, which eventually worked best. I used batch size of 128 datapoints and trained for 30 epochs.
 
-#### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
+For the most part, the only parameters I tunned were the learning rate and the batch size. All the Adam hyperparameters were untouched. 
 
 My final model results were:
 * training set accuracy of ?
 * validation set accuracy of ? 
 * test set accuracy of ?
 
-If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to overfitting or underfitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
-
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
- 
 
 ### Test a Model on New Images
 
@@ -164,8 +158,5 @@ For the first image, the model is relatively sure that this is a stop sign (prob
 
 
 For the second image ... 
-
-### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
-#### 1. Discuss the visual output of your trained network's feature maps. What characteristics did the neural network use to make classifications?
 
 
