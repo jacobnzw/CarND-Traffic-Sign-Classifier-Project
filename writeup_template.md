@@ -16,10 +16,11 @@
 [hist_norm]: ./examples/hist_normalized.jpg "Histogram of normalized data"
 [hist_unnorm]: ./examples/hist_unnormalized.jpg "Histogram of un-normalized data"
 [hist_data]: ./examples/hist_data_split.jpg "Class distribution among train, validation and test set."
-[image3]: ./examples/random_noise.jpg "Random Noise"
-[image4]: ./examples/placeholder.png "Traffic Sign 1"
-[image5]: ./examples/placeholder.png "Traffic Sign 2"
-[image6]: ./examples/placeholder.png "Traffic Sign 3"
+[testimg_1]: ./webimg/testimg_1.jpg 
+[testimg_2]: ./webimg/testimg_2.jpg
+[testimg_3]: ./webimg/testimg_3.jpg
+[testimg_4]: ./webimg/testimg_4.jpg
+[testimg_5]: ./webimg/testimg_5.jpg
 
 ---
 
@@ -111,21 +112,17 @@ To train the model, I used an Adam optimizer with the recommended heuristic valu
 For the most part, the only parameters I tunned were the learning rate and the batch size. All the Adam hyperparameters were untouched. 
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
-
+* training accuracy of 100%
+* validation accuracy of 97%
+* testing accuracy of 27.9%
 
 ### Test a Model on New Images
 
-#### 1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
-
 Here are five German traffic signs that I found on the web:
 
-![alt text][image4] ![alt text][image5] ![alt text][image6] 
-![alt text][image7] ![alt text][image8]
+![][testimg_1] ![][testimg_2] ![][testimg_3] ![][testimg_4] ![][testimg_5]
 
-The first image might be difficult to classify because ...
+The first image might be difficult to classify because it is a perpective transformation of the 'bumpy road' traffic sign. The perspective transfromation is harder to simulate in data augmentation then the ordinary rigid-body transformations.
 
 #### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
